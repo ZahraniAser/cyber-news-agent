@@ -1,0 +1,31 @@
+name: Weekly Cybersecurity Digest
+
+on:
+  schedule:
+    # Runs every Monday at 06:00 UTC (~09:00 Riyadh time).
+    # Adjust the cron expression if you want a different day/time.
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}  # lets you trigger it manually from the Actions tab
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run digest script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: python fetch_cyber_news.py
