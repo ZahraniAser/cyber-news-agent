@@ -132,23 +132,26 @@ Rules:
 def send_email(digest: str) -> None:
     gmail_user = os.environ["GMAIL_USER"]
     gmail_password = os.environ["GMAIL_APP_PASSWORD"]
-    recipient = os.environ["RECIPIENT_EMAIL"]
+    # Supports one or more recipients: comma-separated in the RECIPIENT_EMAIL secret
+    # e.g. "person1@gmail.com,person2@gmail.com"
+    recipients_raw = os.environ["RECIPIENT_EMAIL"]
+    recipients = [r.strip() for r in recipients_raw.split(",") if r.strip()]
 
     today = datetime.now(timezone.utc).strftime("%B %d, %Y")
     subject = f"Weekly Cybersecurity Digest — {today}"
 
     msg = MIMEMultipart()
     msg["From"] = gmail_user
-    msg["To"] = recipient
+    msg["To"] = ", ".join(recipients)
     msg["Subject"] = subject
     msg.attach(MIMEText(digest, "plain"))
 
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
         server.login(gmail_user, gmail_password)
-        server.sendmail(gmail_user, recipient, msg.as_string())
+        server.sendmail(gmail_user, recipients, msg.as_string())
 
-    print(f"Email sent to {recipient}")
+    print(f"Email sent to {', '.join(recipients)}")
 
 
 def main():
