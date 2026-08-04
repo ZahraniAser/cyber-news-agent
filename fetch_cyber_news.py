@@ -234,6 +234,9 @@ def summarize_with_gemini(client: genai.Client, cyber_raw: str, ai_raw: str) -> 
 
 SLATE = "#1f2933"
 ACCENT = "#0f9b8e"
+CYBER_COLOR = "#0e7490"   # deep teal/cyan for cybersecurity
+AI_COLOR = "#4338ca"      # indigo/violet for AI
+WATCH_COLOR = "#b45309"   # amber for the watch section
 LIGHT_BG = "#eef1f3"
 TEXT_DARK = "#1a1a1a"
 TEXT_MUTED = "#5a5a5a"
@@ -243,7 +246,7 @@ def esc(text: str) -> str:
     return html.escape(text or "", quote=False)
 
 
-def render_items_column(items: list) -> str:
+def render_items_column(items: list, accent_color: str) -> str:
     blocks = []
     for item in items:
         headline = esc(item.get("headline", ""))
@@ -258,10 +261,10 @@ def render_items_column(items: list) -> str:
             <div style="font-size:16px;font-weight:700;color:{SLATE};margin-bottom:7px;line-height:1.3;">{headline}</div>
           </a>
           <div style="font-size:14px;color:{TEXT_DARK};line-height:1.55;margin-bottom:9px;">{body}</div>
-          <div style="border-left:3px solid {ACCENT};padding-left:10px;font-size:13px;font-style:italic;color:{TEXT_MUTED};margin-bottom:6px;">
+          <div style="border-left:3px solid {accent_color};padding-left:10px;font-size:13px;font-style:italic;color:{TEXT_MUTED};margin-bottom:8px;">
             {insight}
           </div>
-          <div style="font-size:10.5px;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.6px;">{source}</div>
+          <span style="display:inline-block;background-color:{accent_color};color:#ffffff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:3px 9px;border-radius:10px;">{source}</span>
         </div>
         """)
     if not blocks:
@@ -279,8 +282,8 @@ def render_watch_section(watch_items: list) -> str:
     return f"""
     <tr>
       <td colspan="2" style="padding:26px 24px 10px 24px;">
-        <div style="border-top:2px solid {ACCENT};padding-top:14px;margin-bottom:14px;">
-          <span style="color:{SLATE};font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">Worth Watching</span>
+        <div style="border-top:2px solid {WATCH_COLOR};padding-top:14px;margin-bottom:14px;">
+          <span style="color:{WATCH_COLOR};font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">&#9733; Worth Watching</span>
         </div>
         <ul style="padding-left:18px;margin:0;">
           {rows}
@@ -291,8 +294,8 @@ def render_watch_section(watch_items: list) -> str:
 
 
 def build_html_digest(data: dict, issue_number: int, date_str: str) -> str:
-    cyber_html = render_items_column(data.get("cybersecurity", []))
-    ai_html = render_items_column(data.get("ai", []))
+    cyber_html = render_items_column(data.get("cybersecurity", []), CYBER_COLOR)
+    ai_html = render_items_column(data.get("ai", []), AI_COLOR)
     watch_html = render_watch_section(data.get("watch", []))
 
     return f"""<!DOCTYPE html>
@@ -304,7 +307,18 @@ def build_html_digest(data: dict, issue_number: int, date_str: str) -> str:
         <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="background-color:#ffffff;max-width:640px;">
 
           <tr>
-            <td style="padding:28px 24px 18px 24px;text-align:center;border-bottom:4px solid {SLATE};">
+            <td style="padding:0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" style="height:5px;background-color:{CYBER_COLOR};font-size:0;line-height:0;">&nbsp;</td>
+                  <td width="50%" style="height:5px;background-color:{AI_COLOR};font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:26px 24px 18px 24px;text-align:center;border-bottom:4px solid {SLATE};">
               <div style="font-size:11px;letter-spacing:2px;color:{ACCENT};text-transform:uppercase;font-weight:700;margin-bottom:6px;">The Weekly Signal</div>
               <div style="font-size:30px;font-weight:900;color:{SLATE};font-family:Georgia,'Times New Roman',serif;">Cyber &amp; AI Digest</div>
               <div style="font-size:12px;color:{TEXT_MUTED};margin-top:8px;">Issue No. {issue_number} &nbsp;&middot;&nbsp; {date_str}</div>
@@ -316,14 +330,14 @@ def build_html_digest(data: dict, issue_number: int, date_str: str) -> str:
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td width="50%" style="vertical-align:top;padding-right:16px;">
-                    <div style="border-bottom:2px solid {SLATE};padding-bottom:8px;margin-bottom:16px;">
-                      <span style="color:{SLATE};font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">Cybersecurity</span>
+                    <div style="border-bottom:2px solid {CYBER_COLOR};padding-bottom:8px;margin-bottom:16px;">
+                      <span style="color:{CYBER_COLOR};font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">&#128274; Cybersecurity</span>
                     </div>
                     {cyber_html}
                   </td>
                   <td width="50%" style="vertical-align:top;padding-left:16px;border-left:1px solid #d8dcdf;">
-                    <div style="border-bottom:2px solid {ACCENT};padding-bottom:8px;margin-bottom:16px;">
-                      <span style="color:{SLATE};font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">Artificial Intelligence</span>
+                    <div style="border-bottom:2px solid {AI_COLOR};padding-bottom:8px;margin-bottom:16px;">
+                      <span style="color:{AI_COLOR};font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;">&#129302; Artificial Intelligence</span>
                     </div>
                     {ai_html}
                   </td>
