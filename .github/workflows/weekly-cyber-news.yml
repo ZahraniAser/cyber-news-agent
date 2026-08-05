@@ -2,13 +2,11 @@ name: Weekly Cybersecurity Digest
 
 on:
   schedule:
+    # GitHub's own scheduler — kept as a backup, but can be unreliable/delayed.
     # Runs every Monday at 06:00 UTC (~09:00 Riyadh time).
-    # Adjust the cron expression if you want a different day/time.
     - cron: "0 6 * * 1"
-    # TEMPORARY TEST TRIGGER: fires once on Aug 4 at 07:00 UTC (~10:00 Riyadh).
-    # Remove this line after the test — cron doesn't support true "one-time"
-    # runs, so left as-is it would fire again on Aug 4 next year too.
-    - cron: "0 7 4 8 *"
+  repository_dispatch:
+    types: [send-digest]  # lets an external service (e.g. cron-job.org) trigger this precisely
   workflow_dispatch: {}  # lets you trigger it manually from the Actions tab
 
 jobs:
